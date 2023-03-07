@@ -1,3 +1,4 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -134,20 +135,32 @@ class _LoginScreenState extends State<LoginScreen> {
                     }
                   },
                 ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(230, 0, 0, 0),
-                  child: TextButton(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => SignupScreen()),
-                        );
+                Row(
+                  children: [
+                    ElevatedButton(
+                      onPressed: () async {
+                        UserCredential userCredential =
+                            await signInWithGoogle();
+                        // 로그인 후 처리할 코드를 작성합니다.
                       },
-                      child: Text(
-                        "Sign up here",
-                        style: TextStyle(color: Palette.blue),
-                      )),
+                      child: Text('Google 로그인'),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(100, 0, 0, 0),
+                      child: TextButton(
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                  builder: (context) => SignupScreen()),
+                            );
+                          },
+                          child: Text(
+                            "Sign up here",
+                            style: TextStyle(color: Palette.blue),
+                          )),
+                    ),
+                  ],
                 )
               ]
                   //회원가입하기 버튼

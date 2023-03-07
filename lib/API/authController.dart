@@ -3,8 +3,28 @@ import 'dart:ffi';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 final storage = FlutterSecureStorage();
+final GoogleSignIn _googleSignIn = GoogleSignIn();
+final FirebaseAuth _auth = FirebaseAuth.instance;
+
+Future<UserCredential> signInWithGoogle() async {
+  // 구글 로그인 창을 표시합니다.
+  final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+
+  // 구글 로그인에 성공하면, 구글 사용자 정보를 가져와 Firebase 인증 정보로 교환합니다.
+  final GoogleSignInAuthentication googleAuth =
+      await googleUser!.authentication;
+  final AuthCredential credential = GoogleAuthProvider.credential(
+    accessToken: googleAuth.accessToken,
+    idToken: googleAuth.idToken,
+  );
+  return await _auth.signInWithCredential(credential);
+}
 
 class SigninController {
   //회원가입 클래스
@@ -17,7 +37,8 @@ class SigninController {
   TextEditingController nicknameController =
       TextEditingController(); //nicknameController
   Future signinUser() async {
-    const url = 'http://api-liferary.duckdns.org/api/member/sign-up';
+    final prefs = await SharedPreferences.getInstance();
+    const url = 'http://api-liferary.duckdns.org/api/member/join';
     User userData;
     var data;
 
@@ -37,12 +58,11 @@ class SigninController {
         email: data["email"],
         nickname: data["nickname"],
       );
-      // String id = userData.id.toString();
       String email = emailController.text;
       String nickname = userData.nickname.toString();
-      // await storage.write(key: 'id', value: id);
-      await storage.write(key: 'email', value: email);
-      await storage.write(key: 'nickname', value: nickname);
+
+      await prefs.setString('email', email);
+      await prefs.setString('nickname', nickname);
       // print(id);
       // print(email);
       print(nickname);
@@ -64,6 +84,7 @@ class LoginController {
       TextEditingController(); //Password Controller
 
   static Future<bool> loginUser() async {
+    final prefs = await SharedPreferences.getInstance();
     const url = 'http://api-liferary.duckdns.org/api/member/login';
     // http.Response response;
     User userData;
@@ -86,17 +107,26 @@ class LoginController {
       String accesstoken = userData.accessToken.toString();
       String refreshToken = userData.refreshToken.toString();
       String grantType = emailController.text;
-      await storage.write(key: 'grantType', value: grantType);
-      await storage.write(key: 'accessToken', value: accesstoken);
-      await storage.write(key: 'refreshToken', value: refreshToken);
-      print(accesstoken);
-      print(refreshToken);
+
+      await prefs.setString('grantType', grantType);
+      await prefs.setString('accessToken', accesstoken);
+      await prefs.setString('refreshToken', refreshToken);
+      await prefs.setBool('isLoggedIn', true); // 로그인 여부 저장
+      // print(accesstoken);
+      // print(refreshToken);
       print(response.body);
       return response.body.isEmpty;
     } else {
       print(response.statusCode);
       return response.body.isEmpty;
     }
+  }
+}
+
+class GetSharedPreferencesValues {
+  Future<String?> getSharedPreferencesValue(String key) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString(key);
   }
 }
 
@@ -160,161 +190,3 @@ class User {
     return data;
   }
 }
-
-// Future<getUserStatus> getUserId() async {
-//   const url = 'http://moida-skhu.duckdns.org/user';
-//   // http.Response response;
-
-//   String? token = await storage.read(key: 'Token');
-//   getUserStatus getStatus;
-
-//   var response = await http.get(
-//     Uri.parse(url),
-//     headers: {'Authorization': 'Bearer ${token}'},
-//   );
-
-//   if (response.statusCode == 200) {
-//     print('로그인 정보 ${response.body}');
-//     var data = json.decode(response.body);
-//     getStatus =
-//         getUserStatus(username: data['username'], nickname: data['nickname']);
-//     print('${response.body}');
-//     return getStatus;
-//   } else {
-//     print('로그인 정보 ${response.body}');
-
-//     getStatus = getUserStatus(username: 'null', nickname: 'null');
-//     print('${response.body}');
-//     return getStatus;
-//   }
-// }
-
-// class getUserStatus {
-//   final String username; //user id
-//   final String nickname; //user nicname
-
-//   getUserStatus({
-//     required this.username,
-//     required this.nickname,
-//   });
-// }
-
-// Future<MyPageData> userDataPost() async {
-//   const url = 'http://moida-skhu.duckdns.org/user';
-
-//   String? token = await storage.read(key: 'Token');
-
-//   var response = await http.get(
-//     Uri.parse(url),
-//     headers: {'Authorization': 'Bearer ${token}'},
-//   );
-//   if (response.statusCode == 200) {
-//     print(token);
-//     print('마이페이지 데이터${response.body}');
-//   } else {
-//     print(response.body);
-//   }
-
-//   final jsonResponse = json.decode(utf8.decode(response.bodyBytes));
-
-//   return new MyPageData.fromJson(jsonResponse);
-// }
-
-// /*마이페이지 데이터 모델 */
-// class MyPageData {
-//   String? username;
-//   String? nickname;
-//   Posts? posts;
-//   Posts? comments;
-
-//   MyPageData({this.username, this.nickname, this.posts});
-
-//   MyPageData.fromJson(Map<String, dynamic> json) {
-//     username = json['username'];
-//     nickname = json['nickname'];
-//     posts = json['posts'] != null ? new Posts.fromJson(json['posts']) : null;
-//     comments =
-//         json['comments'] != null ? new Posts.fromJson(json['comments']) : null;
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = new Map<String, dynamic>();
-//     data['username'] = this.username;
-//     data['nickname'] = this.nickname;
-//     if (this.posts != null) {
-//       data['posts'] = this.posts!.toJson();
-//     }
-//     if (this.comments != null) {
-//       data['comments'] = this.comments!.toJson();
-//     }
-//     return data;
-//   }
-// }
-
-// class Posts {
-//   List<MyContent>? myContent;
-
-//   Posts({this.myContent});
-
-//   Posts.fromJson(Map<String, dynamic> json) {
-//     if (json['content'] != null) {
-//       myContent = <MyContent>[];
-//       json['content'].forEach((v) {
-//         myContent!.add(new MyContent.fromJson(v));
-//       });
-//     }
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = new Map<String, dynamic>();
-//     if (this.myContent != null) {
-//       data['content'] = this.myContent!.map((v) => v.toJson()).toList();
-//     }
-//     return data;
-//   }
-// }
-
-// class MyContent {
-//   int? id;
-//   String? author;
-//   String? title;
-//   String? type;
-//   String? context;
-//   Null? comments;
-//   String? createdDate;
-//   String? modifiedDate;
-
-//   MyContent(
-//       {this.id,
-//       this.author,
-//       this.title,
-//       this.type,
-//       this.context,
-//       this.comments,
-//       this.createdDate,
-//       this.modifiedDate});
-
-//   MyContent.fromJson(Map<String, dynamic> json) {
-//     id = json['id'];
-//     author = json['author'];
-//     title = json['title'];
-//     type = json['type'];
-//     context = json['context'];
-//     comments = json['comments'];
-//     createdDate = json['createdDate'];
-//     modifiedDate = json['modifiedDate'];
-//   }
-
-//   Map<String, dynamic> toJson() {
-//     final Map<String, dynamic> data = new Map<String, dynamic>();
-//     data['id'] = this.id;
-//     data['author'] = this.author;
-//     data['title'] = this.title;
-//     data['type'] = this.type;
-//     data['context'] = this.context;
-//     data['comments'] = this.comments;
-//     data['createdDate'] = this.createdDate;
-//     data['modifiedDate'] = this.modifiedDate;
-//     return data;
-//   }
-// }

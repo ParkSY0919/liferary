@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
-import 'package:liferary/Styles/Styles.dart';
-import 'package:liferary/category/category_of_health.dart';
-import 'package:liferary/category/category_of_nonsense.dart';
+import 'package:liferary/API/authController.dart';
 import 'package:liferary/category/fullview_category.dart';
 import 'package:liferary/category/left_sentence.dart';
 import 'package:liferary/screens/Mypage.dart';
 import 'package:liferary/screens/login.dart';
 import 'package:liferary/screens/share_write.dart';
 import 'package:liferary/utilities/palette.dart';
-import 'package:liferary/category/category_of_food.dart';
 import 'package:liferary/widgets/main_posts.dart';
-import 'package:rive/math.dart';
-import 'package:liferary/widgets/main_posts.dart';
+
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,6 +19,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final SearchController = TextEditingController();
+  String? accessToken = null;
   Color category_modal_button = inactiveCardColor;
 
   static Color inactiveCardColor = Palette.blue4;
@@ -34,6 +29,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (gender == 1) {
       category_modal_button = activeCardColor;
     } else {}
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _getToken();
+  }
+
+  void _getToken() async {
+    String? tokenValue = await GetSharedPreferencesValues()
+        .getSharedPreferencesValue('accessToken');
+
+    setState(() {
+      accessToken = tokenValue;
+    });
   }
 
   @override
@@ -135,35 +145,100 @@ class _HomeScreenState extends State<HomeScreen> {
 
                           //Logout button
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-                            child: InkWell(
-                              child: Center(
-                                  child: Container(
-                                      width: _width * 0.2,
-                                      height: _height * 0.03,
-                                      decoration: BoxDecoration(
-                                        color: Palette.blue3,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          "Logout",
-                                          style: TextStyle(
-                                              fontSize: 15,
-                                              color: Palette.white),
-                                        ),
-                                      ))),
+                            padding: const EdgeInsets.fromLTRB(5, 5, 0, 0),
+                            child: accessToken != null
+                                ? InkWell(
+                                    child: Center(
+                                        child: Container(
+                                            width: _width * 0.2,
+                                            height: _height * 0.03,
+                                            decoration: BoxDecoration(
+                                              color: Palette.blue3,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "Logout",
+                                                style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: Palette.white),
+                                              ),
+                                            ))),
 
-                              //Logout 버튼 클릭시 네비게이션 작동
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                      builder: (context) => LoginScreen()),
-                                );
-                              },
-                            ),
+                                    //Logout 버튼 클릭시 네비게이션 작동
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                LoginScreen()),
+                                      );
+                                    },
+                                  )
+                                : InkWell(
+                                    child: Center(
+                                        child: Container(
+                                            width: _width * 0.2,
+                                            height: _height * 0.03,
+                                            decoration: BoxDecoration(
+                                              color: Palette.blue3,
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                "Login",
+                                                style: TextStyle(
+                                                    fontSize: 15,
+                                                    color: Palette.white),
+                                              ),
+                                            ))),
+
+                                    //Logout 버튼 클릭시 네비게이션 작동
+                                    onTap: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                LoginScreen()),
+                                      );
+                                    },
+                                  ),
                           ),
+                          //
+                          // Padding(
+                          //   padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          //   child: InkWell(
+                          //     child: Center(
+                          //         child: Container(
+                          //             width: _width * 0.2,
+                          //             height: _height * 0.03,
+                          //             decoration: BoxDecoration(
+                          //               color: Palette.blue3,
+                          //               borderRadius: BorderRadius.circular(10),
+                          //             ),
+                          //             child: Center(
+                          //               child: Text(
+                          //                 "Logout",
+                          //                 style: TextStyle(
+                          //                     fontSize: 15,
+                          //                     color: Palette.white),
+                          //               ),
+                          //             ))),
+
+                          //     //Logout 버튼 클릭시 네비게이션 작동
+                          //     onTap: () {
+                          //       Navigator.push(
+                          //         context,
+                          //         MaterialPageRoute(
+                          //             builder: (context) => LoginScreen()),
+                          //       );
+                          //     },
+                          //   ),
+                          // ),
+
+                          ///////
                         ],
                       )
                     ]),
@@ -654,28 +729,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             Padding(
                               padding: const EdgeInsets.fromLTRB(5, 5, 0, 0),
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                    backgroundColor: Palette.white,
-                                    shape: CircleBorder(),
-                                    side: BorderSide(
-                                      color: Palette.blue,
-                                      width: 2,
-                                    )),
-                                child: Icon(
-                                  Icons.create,
-                                  size: _width * 0.09,
-                                  color: Palette.blue4,
-                                ),
-                                onPressed: () {
-                                  Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            Share_writeScreen()),
-                                  );
-                                },
-                              ),
+                              child: accessToken != null
+                                  ? ElevatedButton(
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Palette.white,
+                                        shape: CircleBorder(),
+                                        side: BorderSide(
+                                          color: Palette.blue,
+                                          width: 2,
+                                        ),
+                                      ),
+                                      child: Icon(
+                                        Icons.create,
+                                        size: _width * 0.09,
+                                        color: Palette.blue4,
+                                      ),
+                                      onPressed: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                Share_writeScreen(),
+                                          ),
+                                        );
+                                      },
+                                    )
+                                  : SizedBox(),
                             ),
                           ],
                         ),

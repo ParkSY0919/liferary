@@ -1,9 +1,9 @@
-import 'package:flutter/cupertino.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
+import 'package:liferary/API/postController.dart';
 import 'package:liferary/category/choosehere_category.dart';
 import 'package:liferary/screens/MyPage.dart';
+import 'package:liferary/screens/home.dart';
 import 'package:liferary/screens/login.dart';
 import 'package:liferary/utilities/palette.dart';
 import 'package:liferary/widgets/createstudy_modal.dart';
@@ -17,6 +17,18 @@ class Share_writeScreen extends StatefulWidget {
 
 class _Share_writeScreenState extends State<Share_writeScreen> {
   final SearchController = TextEditingController();
+  void getFile() async {
+    FilePickerResult? result =
+        await FilePicker.platform.pickFiles(allowMultiple: true);
+
+    if (result != null) {
+      print(result.names);
+      writePostController.selectedFile = result;
+      // 파일 사용하기
+    } else {
+      // 취소 버튼을 눌렀을 때 처리할 코드 작성
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -180,6 +192,7 @@ class _Share_writeScreenState extends State<Share_writeScreen> {
                               border: Border.all(color: Palette.blue, width: 2),
                             ),
                             child: TextField(
+                              controller: writePostController.titleController,
                               decoration: InputDecoration(
                                   border: InputBorder.none,
                                   hintText: 'Please enter your title.',
@@ -201,6 +214,7 @@ class _Share_writeScreenState extends State<Share_writeScreen> {
                               border: Border.all(color: Palette.blue, width: 2),
                             ),
                             child: TextField(
+                              controller: writePostController.contextController,
                               textAlign: TextAlign.left,
                               autofocus: true,
                               decoration: InputDecoration(
@@ -229,15 +243,17 @@ class _Share_writeScreenState extends State<Share_writeScreen> {
                                 ),
                                 child: Row(
                                   children: [
-                                    Icon(
-                                      Icons.upload_file,
-                                      size: _width * 0.09,
-                                      color: Palette.white,
-                                    ),
+                                    IconButton(
+                                        onPressed: getFile,
+                                        icon: Icon(
+                                          Icons.upload_file,
+                                          size: _width * 0.09,
+                                          color: Palette.white,
+                                        )),
                                     Text(
                                       "Files",
                                       style: TextStyle(
-                                          fontSize: 17, color: Palette.white),
+                                          fontSize: 14, color: Palette.white),
                                     ),
                                   ],
                                 ),
@@ -287,7 +303,7 @@ class _Share_writeScreenState extends State<Share_writeScreen> {
                             ),
                             Padding(
                               padding: const EdgeInsets.fromLTRB(0, 15, 0, 0),
-                              child: Center(
+                              child: GestureDetector(
                                 child: Container(
                                   //comment
                                   width: _width * 0.4,
@@ -307,6 +323,15 @@ class _Share_writeScreenState extends State<Share_writeScreen> {
                                     ],
                                   ),
                                 ),
+                                onTap: () {
+                                  writePostController.postWrite();
+
+                                  Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                          builder: ((context) =>
+                                              HomeScreen())));
+                                },
                               ),
                             ),
                           ],

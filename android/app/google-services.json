@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1008728904046",
+    "project_id": "liferary-091999",
+    "storage_bucket": "liferary-091999.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1008728904046:android:437db3d01e741b9298717f",
+        "android_client_info": {
+          "package_name": "com.example.liferary"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1008728904046-uaocomjki0a958e6am1gfbeh0tbm63bi.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbKJ1IHmFaGSS6S1quog7_w-aA75GWo9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1008728904046-uaocomjki0a958e6am1gfbeh0tbm63bi.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
